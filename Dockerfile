@@ -24,3 +24,13 @@ RUN uv pip install --python /comfyui/.venv/bin/python --no-cache \
 
 # 4) sanity: nunchaku imports in the venv (fails the build early if it does not)
 RUN /comfyui/.venv/bin/python -c "import nunchaku; print('nunchaku', getattr(nunchaku,'__version__','?'))"
+
+# 5) expose the Nunchaku INT4 model to ComfyUI's "diffusion_models" category.
+#    The base image's extra_model_paths.yaml maps unet/clip/vae but has NO
+#    diffusion_models key, yet NunchakuQwenImageDiTLoader reads
+#    get_filename_list("diffusion_models") + get_full_path_or_raise("diffusion_models", ...).
+#    APPEND the key (do NOT overwrite the file) so the volume's
+#    /runpod-volume/models/diffusion_models/ is searched. base_path stays /runpod-volume.
+RUN printf '\n  diffusion_models: models/diffusion_models/\n' >> /comfyui/extra_model_paths.yaml \
+ && echo '=== extra_model_paths.yaml after append ===' \
+ && cat /comfyui/extra_model_paths.yaml
