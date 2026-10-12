@@ -11,8 +11,12 @@
 # `import nunchaku` pass but ComfyUI fail at runtime with "No module named 'nunchaku'".
 FROM runpod/worker-comfyui:5.10.0-base
 
-# 1) the ComfyUI-nunchaku custom node (provides NunchakuQwenImageDiTLoader)
-RUN git clone --depth 1 https://github.com/nunchaku-tech/ComfyUI-nunchaku.git \
+# 1) the ComfyUI-nunchaku custom node (provides NunchakuQwenImageDiTLoader).
+#    PINNED to v1.2.1 (last stable release, Jan 2026) — NOT main. main (Oct 2026)
+#    calls newer backend APIs than the newest Torch-2.11 nunchaku wheel (dev20260213/0306)
+#    implements, which loaded + ran but produced noise. v1.2.1's backend-API usage
+#    (from nunchaku.utils import check_hardware_compatibility, ...) matches this wheel era.
+RUN git clone --depth 1 --branch v1.2.1 https://github.com/nunchaku-tech/ComfyUI-nunchaku.git \
       /comfyui/custom_nodes/ComfyUI-nunchaku
 
 # 2) the Nunchaku backend wheel, matched to the image (cu12.8 / torch2.11 / cp312),
